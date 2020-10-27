@@ -1,8 +1,7 @@
 import React from 'react';
 import './App.css';
-import GeneralInfo from './components/GeneralInfo';
-import Education from './components/Education';
-import Experience from './components/Experience';
+import DisplayedData from './components/DisplayedData';
+import SubmissionForm from './components/SubmissionForm';
 
 
 class App extends React.Component {
@@ -10,26 +9,71 @@ class App extends React.Component {
     super(props);
     this.state = {
       generalInfo: {
+        title: "General Information",
+        sectionID: "generalInfo", 
         submitted: false,
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: ""
+        firstName: {
+          value: "",
+          type: "text"
+        },
+        lastName: {
+          value: "",
+          type: "text"
+        },
+        email: {
+          value: "",
+          type: "email"
+        },
+        phoneNumber: {
+          value: "",
+          type: "tel"
+        }
       },
       education: {
+        title: "Education",
+        sectionID: "education", 
         submitted: false,
-        schoolName: "",
-        titleOfStudy: "",
-        schoolStartDate: "",
-        schoolEndDate: "",
+        schoolName: {
+          value: "",
+          type: "text"
+        },
+        titleEarned: {
+          value: "",
+          type: "text"
+        },
+        schoolStartDate: {
+          value: "",
+          type: "date"
+        },
+        schoolEndDate: {
+          value: "",
+          type: "date"
+        }
       },
       experience: {
+        title: "Work Experience",
+        sectionID: "experience",
         submitted: false,
-        companyName: "",
-        jobTitle: "",
-        jobDescription: "",
-        jobStartDate: "",
-        jobEndDate: ""
+        companyName:  {
+          value: "",
+          type: "text"
+        },
+        jobTitle:  {
+          value: "",
+          type: "text"
+        },
+        jobDescription:  {
+          value: "",
+          type: "text"
+        },
+        positionStartDate:  {
+          value: "",
+          type: "date"
+        },
+        positionEndDate:  {
+          value: "",
+          type: "date"
+        }
       }
     }
   }
@@ -38,7 +82,7 @@ class App extends React.Component {
     const targetField = e.target.id;
     const targetSection = this.getTargetSection(targetField);
     const targetObject = Object.assign({}, this.state[targetSection]);
-    targetObject[targetField] = e.target.value;
+    targetObject[targetField].value = e.target.value;
 
     this.setState({
       [targetSection]: targetObject
@@ -58,7 +102,7 @@ class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     let buttonId = e.target.id
-    let targetSection = buttonId.slice(11);
+    let targetSection = buttonId.slice(5);
 
     const targetObject = Object.assign({}, this.state[targetSection]);
     targetObject.submitted = true;
@@ -80,35 +124,60 @@ class App extends React.Component {
     });
   }
 
+
+  createLabel = key => {
+    let label = key
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/([A-Z])([A-Z])/g, "$1 $2");
+
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+
+    return label;
+  }
+
+  getFields = information => {
+    let keys = Object.keys(information);
+    let fields = keys.filter( key => {
+      return information[key].value !== undefined;
+    });
+  
+    return fields;
+  }
+
   render() {
-    return (
-      <>
-      <div>
-        <GeneralInfo
-          information={this.state.generalInfo}
-          onChange={this.handleChange}
-          onSubmit={this.handleSubmit}
-          undoSubmit={this.undoSubmit}
-        />
-      </div>
-      <div>
-        <Education
-          information={this.state.education}
-          onChange={this.handleChange}
-          onSubmit={this.handleSubmit}
-          undoSubmit={this.undoSubmit}
-        />
-      </div>
-      <div>
-        <Experience
-          information={this.state.experience}
-          onChange={this.handleChange}
-          onSubmit={this.handleSubmit}
-          undoSubmit={this.undoSubmit}
-        />
-      </div>
-    </>
-    )
+    const sections = Object.keys(this.state);
+
+    //render submission form for each section where submitted equals false
+    //render displayed date for each section where submitted equals true
+    let page = sections.map( (section, index) => {
+      if (this.state[section].submitted) {
+       return (
+        <>
+          <DisplayedData 
+            key={index}
+            createLabel={this.createLabel}
+            fields={this.getFields(this.state[section])}
+            information={this.state[section]}
+            undoSubmit={this.undoSubmit}            
+          />
+        </>
+      )
+      }
+      return (
+        <>
+          <SubmissionForm
+            key={index}
+            createLabel={this.createLabel}
+            fields={this.getFields(this.state[section])}
+            information={this.state[section]}
+            onChange={this.handleChange}
+            onSubmit={this.handleSubmit}
+          />
+        </>
+      )
+    });
+
+    return page;
   }
 }
 
